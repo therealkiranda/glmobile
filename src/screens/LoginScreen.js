@@ -8,6 +8,11 @@ export default function LoginScreen({ navigation }) {
   const { login } = useContext(AuthContext);
 
   const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert('Login Failed', 'Please enter both email and password.');
+      return;
+    }
+
     const result = await login(email, password);
     if (result.success) {
       navigation.replace('RoleSelection');

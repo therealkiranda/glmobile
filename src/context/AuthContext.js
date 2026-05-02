@@ -3,8 +3,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 
 const API_BASE = 'https://hotel.primelogic.com.np/api'; // Adjust to your API URL
+const LOGIN_PATH = '/admin/login'; // Backend login route updated to https://hotel.primelogic.com.np/admin/login
 
 axios.defaults.baseURL = API_BASE;
+axios.defaults.headers.common['Content-Type'] = 'application/json';
 
 export const AuthContext = createContext();
 
@@ -37,7 +39,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const response = await axios.post('/auth/admin/login', { email, password });
+      const response = await axios.post(LOGIN_PATH, { email, password });
       const { token, user } = response.data;
       await AsyncStorage.setItem('token', token);
       await AsyncStorage.setItem('user', JSON.stringify(user));
@@ -45,7 +47,10 @@ export const AuthProvider = ({ children }) => {
       setUser(user);
       return { success: true };
     } catch (error) {
-      return { success: false, error: error.response?.data?.error || 'Login failed' };
+      console.error('Login error:', error.response?.data || error.message || error);
+      const serverError = error.response?.data?.error || error.response?.data?.message;
+      const errorMessage = serverError || error.message || 'Login failed';
+      return { success: false, error: errorMessage };
     }
   };
 
