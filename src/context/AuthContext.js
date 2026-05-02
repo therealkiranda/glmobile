@@ -2,7 +2,7 @@ import React, { createContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 
-const API_BASE = 'https://hotel.primelogic.com.np/api'; // Adjust to your API URL
+const API_BASE = 'https://hotel.primelogic.com.np'; // Adjust to your API URL
 const LOGIN_PATH = '/admin/login'; // Backend login route updated to https://hotel.primelogic.com.np/admin/login
 
 axios.defaults.baseURL = API_BASE;
