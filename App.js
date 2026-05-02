@@ -1,26 +1,48 @@
-import React from 'react';
+// App.js — Grand Lumière Hotel Staff App
+import 'react-native-gesture-handler';
+import React, { useContext } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import { AuthProvider } from './src/context/AuthContext';
-import LoginScreen from './src/screens/LoginScreen';
-import RoleSelectionScreen from './src/screens/RoleSelectionScreen';
-import AdminDashboard from './src/screens/AdminDashboard';
-import HRDashboard from './src/screens/HRDashboard';
-import ReceptionDashboard from './src/screens/ReceptionDashboard';
+import { ActivityIndicator, View } from 'react-native';
+import { AuthProvider, AuthContext } from './src/context/AuthContext';
+import LoginScreen          from './src/screens/LoginScreen';
+import RoleSelectionScreen  from './src/screens/RoleSelectionScreen';
+import AdminDashboard       from './src/screens/AdminDashboard';
+import HRDashboard          from './src/screens/HRDashboard';
+import ReceptionDashboard   from './src/screens/ReceptionDashboard';
 
 const Stack = createStackNavigator();
+
+function AppNavigator() {
+  const { user, loading } = useContext(AuthContext);
+
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#1a3c2e' }}>
+        <ActivityIndicator size="large" color="#c9a96e" />
+      </View>
+    );
+  }
+
+  return (
+    <Stack.Navigator
+      initialRouteName={user ? 'RoleSelection' : 'Login'}
+      screenOptions={{ headerShown: false }}
+    >
+      <Stack.Screen name="Login"             component={LoginScreen} />
+      <Stack.Screen name="RoleSelection"     component={RoleSelectionScreen} />
+      <Stack.Screen name="AdminDashboard"    component={AdminDashboard} />
+      <Stack.Screen name="HRDashboard"       component={HRDashboard} />
+      <Stack.Screen name="ReceptionDashboard" component={ReceptionDashboard} />
+    </Stack.Navigator>
+  );
+}
 
 export default function App() {
   return (
     <AuthProvider>
       <NavigationContainer>
-        <Stack.Navigator initialRouteName="Login">
-          <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
-          <Stack.Screen name="RoleSelection" component={RoleSelectionScreen} options={{ title: 'Select Role' }} />
-          <Stack.Screen name="AdminDashboard" component={AdminDashboard} options={{ title: 'Admin Dashboard' }} />
-          <Stack.Screen name="HRDashboard" component={HRDashboard} options={{ title: 'HR Dashboard' }} />
-          <Stack.Screen name="ReceptionDashboard" component={ReceptionDashboard} options={{ title: 'Reception Dashboard' }} />
-        </Stack.Navigator>
+        <AppNavigator />
       </NavigationContainer>
     </AuthProvider>
   );
