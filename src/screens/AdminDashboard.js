@@ -103,13 +103,13 @@ export default function AdminDashboard({ navigation }) {
           {/* Quick Actions */}
           <Text style={styles.sectionTitle}>QUICK ACTIONS</Text>
           <View style={styles.menuList}>
-            <MenuButton icon="📋" label="Bookings"        color="#1a3c2e" onPress={() => {}} />
-            <MenuButton icon="🛏" label="Rooms"           color="#0284c7" onPress={() => {}} />
-            <MenuButton icon="👤" label="Customers"       color="#7c3aed" onPress={() => {}} />
-            <MenuButton icon="👥" label="Staff"           color="#d97706" onPress={() => {}} />
-            <MenuButton icon="💳" label="Payments"        color="#059669" onPress={() => {}} />
-            <MenuButton icon="📊" label="Reports"         color="#dc2626" onPress={() => {}} />
-            <MenuButton icon="⚙️" label="Settings"        color="#6b7280" onPress={() => {}} />
+            <MenuButton icon="📋" label="Bookings"   color="#1a3c2e" onPress={() => navigation.navigate('AdminBookings')} />
+            <MenuButton icon="🛏" label="Rooms"      color="#0284c7" onPress={() => navigation.navigate('AdminRooms')} />
+            <MenuButton icon="👤" label="Customers"  color="#7c3aed" onPress={() => navigation.navigate('AdminCustomers')} />
+            <MenuButton icon="👥" label="Staff"      color="#d97706" onPress={() => navigation.navigate('AdminStaff')} />
+            <MenuButton icon="💳" label="Payments"   color="#059669" onPress={() => navigation.navigate('AdminPayments')} />
+            <MenuButton icon="📊" label="Reports"    color="#dc2626" onPress={() => navigation.navigate('AdminReports')} />
+            <MenuButton icon="⚙️" label="Settings"   color="#6b7280" onPress={() => navigation.navigate('AdminSettings')} />
           </View>
         </>
       )}

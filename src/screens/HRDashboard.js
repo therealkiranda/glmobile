@@ -105,13 +105,13 @@ export default function HRDashboard({ navigation }) {
           <Text style={styles.sectionLabel}>QUICK ACTIONS</Text>
           <View style={styles.menuList}>
             {[
-              { icon: '👤', label: 'Manage Employees',  color: '#0284c7' },
-              { icon: '🏢', label: 'Departments',       color: '#7c3aed' },
-              { icon: '📋', label: 'Leave Requests',    color: '#d97706' },
-              { icon: '💰', label: 'Payroll',           color: '#065f46' },
-              { icon: '📊', label: 'Attendance',        color: '#dc2626' },
+              { icon: '👤', label: 'Manage Employees',  color: '#0284c7', screen: 'HREmployees' },
+              { icon: '🏢', label: 'Departments',       color: '#7c3aed', screen: 'HRDepartments' },
+              { icon: '📋', label: 'Leave Requests',    color: '#d97706', screen: 'HRLeave' },
+              { icon: '💰', label: 'Payroll',           color: '#065f46', screen: 'HRPayroll' },
+              { icon: '📊', label: 'Attendance',        color: '#dc2626', screen: 'HRAttendance' },
             ].map(a => (
-              <TouchableOpacity key={a.label} style={styles.menuItem}>
+              <TouchableOpacity key={a.label} style={styles.menuItem} onPress={() => navigation.navigate(a.screen)}>
                 <View style={[styles.menuIcon, { backgroundColor: a.color + '15' }]}>
                   <Text style={styles.menuEmoji}>{a.icon}</Text>
                 </View>

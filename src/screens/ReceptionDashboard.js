@@ -104,12 +104,12 @@ export default function ReceptionDashboard({ navigation }) {
           <Text style={styles.sectionLabel}>QUICK ACTIONS</Text>
           <View style={styles.actionsRow}>
             {[
-              { icon: '➕', label: 'New Booking', color: '#1a3c2e' },
-              { icon: '✅', label: 'Check In',    color: '#065f46' },
-              { icon: '🔑', label: 'Check Out',   color: '#7c3aed' },
-              { icon: '🗺', label: 'Room Grid',   color: '#0284c7' },
+              { icon: '➕', label: 'New Booking', color: '#1a3c2e', screen: 'ReceptionNewBooking' },
+              { icon: '✅', label: 'Check In',    color: '#065f46', screen: 'ReceptionCheckIn' },
+              { icon: '🔑', label: 'Check Out',   color: '#7c3aed', screen: 'ReceptionCheckOut' },
+              { icon: '🗺', label: 'Room Grid',   color: '#0284c7', screen: 'ReceptionRoomGrid' },
             ].map(a => (
-              <TouchableOpacity key={a.label} style={[styles.actionBtn, { borderTopColor: a.color }]}>
+              <TouchableOpacity key={a.label} style={[styles.actionBtn, { borderTopColor: a.color }]} onPress={() => navigation.navigate(a.screen)}>
                 <Text style={styles.actionIcon}>{a.icon}</Text>
                 <Text style={[styles.actionLabel, { color: a.color }]}>{a.label}</Text>
               </TouchableOpacity>
