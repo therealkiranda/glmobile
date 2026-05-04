@@ -1,38 +1,37 @@
 // src/screens/RoleSelectionScreen.js
-// Fixed: user.name → user.first_name + user.last_name, role logic
+// Author: Kiran Khadka, Contact: +977-9869756622, Mail: therealkiranda@gmail.com
+// © 2026 Kiran Khadka. All rights reserved.
 import React, { useContext } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, StatusBar, ScrollView } from 'react-native';
 import { AuthContext } from '../context/AuthContext';
-
-const C = {
-  primary: '#1a3c2e', gold: '#c9a96e', bg: '#f4f1eb',
-  white: '#ffffff', gray: '#6b7280', lightBg: '#fffef9',
-};
 
 const ROLE_CONFIG = {
   admin: {
     icon: '⚙️', label: 'Admin Panel',
     desc: 'Full hotel management & settings',
-    color: '#1a3c2e', screen: 'AdminDashboard',
+    screen: 'AdminDashboard',
   },
   hr: {
     icon: '👥', label: 'HR Management',
     desc: 'Staff, payroll & leave management',
-    color: '#0284c7', screen: 'HRDashboard',
+    screen: 'HRDashboard',
   },
   reception: {
     icon: '🏨', label: 'Reception',
     desc: 'Check-in, check-out & bookings',
-    color: '#7c3aed', screen: 'ReceptionDashboard',
+    screen: 'ReceptionDashboard',
   },
 };
 
 export default function RoleSelectionScreen({ navigation }) {
-  const { user, logout } = useContext(AuthContext);
+  const { user, logout, hotelInfo, theme } = useContext(AuthContext);
 
-  // Fixed: use first_name/last_name instead of name
+  const primary = theme?.primary_color || '#1a3c2e';
+  const gold    = theme?.secondary_color || '#c9a96e';
+  const bg      = theme?.background_color || '#f4f1eb';
+
   const displayName = user
-    ? `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email
+    ? `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.name || user.email
     : 'Staff';
 
   const getAvailableRoles = () => {
@@ -42,33 +41,50 @@ export default function RoleSelectionScreen({ navigation }) {
     if (['super_admin', 'admin'].includes(r)) roles.push('admin');
     if (['super_admin', 'admin', 'hr_manager'].includes(r)) roles.push('hr');
     if (['super_admin', 'admin', 'receptionist', 'front_desk'].includes(r)) roles.push('reception');
-    // If no specific role matched, show all (super_admin fallback)
     if (roles.length === 0) roles.push('admin', 'hr', 'reception');
     return roles;
   };
 
-  return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <StatusBar barStyle="dark-content" backgroundColor={C.bg} />
+  const handleLogout = async () => {
+    await logout();
+    navigation.replace('Login');
+  };
 
-      {/* Welcome header */}
+  const availableRoles = getAvailableRoles();
+
+  if (availableRoles.length === 1) {
+    const cfg = ROLE_CONFIG[availableRoles[0]];
+    if (cfg) {
+      navigation.replace(cfg.screen);
+      return null;
+    }
+  }
+
+  return (
+    <ScrollView style={[styles.container, { backgroundColor: bg }]} contentContainerStyle={styles.content}>
+      <StatusBar barStyle="dark-content" backgroundColor={bg} />
+
       <View style={styles.header}>
-        <View style={styles.avatar}>
-          <Text style={styles.avatarText}>
+        <View style={[styles.avatar, { backgroundColor: primary }]}>
+          <Text style={[styles.avatarText, { color: gold }]}>
             {(user?.first_name?.[0] || '') + (user?.last_name?.[0] || '') || '?'}
           </Text>
         </View>
         <Text style={styles.welcome}>Welcome back,</Text>
-        <Text style={styles.name}>{displayName}</Text>
-        <View style={styles.roleBadge}>
-          <Text style={styles.roleBadgeText}>{(user?.role || 'staff').replace('_', ' ').toUpperCase()}</Text>
+        <Text style={[styles.name, { color: primary }]}>{displayName}</Text>
+        <View style={[styles.roleBadge, { backgroundColor: gold + '25' }]}>
+          <Text style={[styles.roleBadgeText, { color: gold }]}>{(user?.role || 'staff').replace(/_/g, ' ').toUpperCase()}</Text>
         </View>
+        {hotelInfo?.name ? (
+          <Text style={[styles.hotelName, { color: primary }]}>{hotelInfo.name}</Text>
+        ) : null}
       </View>
 
-      <Text style={styles.sectionLabel}>SELECT YOUR WORKSPACE</Text>
+      <Text style={[styles.sectionLabel, { color: primary }]}>SELECT YOUR WORKSPACE</Text>
 
-      {getAvailableRoles().map(role => {
+      {availableRoles.map(role => {
         const cfg = ROLE_CONFIG[role];
+        if (!cfg) return null;
         return (
           <TouchableOpacity
             key={role}
@@ -76,19 +92,19 @@ export default function RoleSelectionScreen({ navigation }) {
             onPress={() => navigation.replace(cfg.screen)}
             activeOpacity={0.85}
           >
-            <View style={[styles.roleIcon, { backgroundColor: cfg.color + '15' }]}>
+            <View style={[styles.roleIcon, { backgroundColor: primary + '15' }]}>
               <Text style={styles.roleEmoji}>{cfg.icon}</Text>
             </View>
             <View style={styles.roleInfo}>
-              <Text style={styles.roleLabel}>{cfg.label}</Text>
+              <Text style={[styles.roleLabel, { color: primary }]}>{cfg.label}</Text>
               <Text style={styles.roleDesc}>{cfg.desc}</Text>
             </View>
-            <Text style={[styles.arrow, { color: cfg.color }]}>›</Text>
+            <Text style={[styles.arrow, { color: primary }]}>›</Text>
           </TouchableOpacity>
         );
       })}
 
-      <TouchableOpacity style={styles.logoutBtn} onPress={logout}>
+      <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
         <Text style={styles.logoutText}>Sign Out</Text>
       </TouchableOpacity>
     </ScrollView>
@@ -96,34 +112,28 @@ export default function RoleSelectionScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg },
+  container: { flex: 1 },
   content: { padding: 24, paddingTop: 60, paddingBottom: 40 },
-
   header: { alignItems: 'center', marginBottom: 40 },
   avatar: {
     width: 72, height: 72, borderRadius: 36,
-    backgroundColor: C.primary,
     alignItems: 'center', justifyContent: 'center',
     marginBottom: 12,
     shadowColor: '#000', shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.2, shadowRadius: 6, elevation: 5,
   },
-  avatarText: { fontSize: 24, fontWeight: '700', color: C.gold },
-  welcome: { fontSize: 14, color: C.gray, marginBottom: 4 },
-  name: { fontSize: 22, fontWeight: '700', color: C.primary, marginBottom: 8 },
-  roleBadge: {
-    backgroundColor: C.gold + '25', borderRadius: 999,
-    paddingHorizontal: 14, paddingVertical: 4,
-  },
-  roleBadgeText: { fontSize: 10, fontWeight: '700', color: C.gold, letterSpacing: 1.5 },
-
+  avatarText: { fontSize: 24, fontWeight: '700' },
+  welcome: { fontSize: 14, color: '#6b7280', marginBottom: 4 },
+  name: { fontSize: 22, fontWeight: '700', marginBottom: 8 },
+  roleBadge: { borderRadius: 999, paddingHorizontal: 14, paddingVertical: 4, marginBottom: 6 },
+  roleBadgeText: { fontSize: 10, fontWeight: '700', letterSpacing: 1.5 },
+  hotelName: { fontSize: 12, fontWeight: '600', marginTop: 4, opacity: 0.7 },
   sectionLabel: {
-    fontSize: 10, fontWeight: '700', color: C.gray,
+    fontSize: 10, fontWeight: '700',
     letterSpacing: 2, marginBottom: 16,
   },
-
   roleCard: {
-    backgroundColor: C.white,
+    backgroundColor: '#fff',
     borderRadius: 16, padding: 18,
     flexDirection: 'row', alignItems: 'center',
     marginBottom: 14,
@@ -136,10 +146,9 @@ const styles = StyleSheet.create({
   },
   roleEmoji: { fontSize: 24 },
   roleInfo: { flex: 1 },
-  roleLabel: { fontSize: 16, fontWeight: '700', color: C.primary, marginBottom: 3 },
-  roleDesc: { fontSize: 12, color: C.gray },
+  roleLabel: { fontSize: 16, fontWeight: '700', marginBottom: 3 },
+  roleDesc: { fontSize: 12, color: '#6b7280' },
   arrow: { fontSize: 28, fontWeight: '300', marginLeft: 8 },
-
   logoutBtn: {
     marginTop: 24, alignItems: 'center',
     padding: 16, borderRadius: 12,

@@ -15,7 +15,7 @@ export default function HRDashboard({ navigation }) {
   const [data, setData]         = useState(null);
   const [loading, setLoading]   = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const { user, logout, api }   = useContext(AuthContext);
+  const { user, logout, api, hotelInfo, theme }   = useContext(AuthContext);
 
   const displayName = user
     ? `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'HR Manager'
@@ -48,14 +48,14 @@ export default function HRDashboard({ navigation }) {
           <Text style={styles.headerSub}>Welcome back,</Text>
           <Text style={styles.headerName}>{displayName}</Text>
         </View>
-        <TouchableOpacity style={styles.logoutBtn} onPress={logout}>
+        <TouchableOpacity style={styles.logoutBtn} onPress={async () => { await logout(); navigation.replace('Login'); }}>
           <Text style={styles.logoutText}>Sign Out</Text>
         </TouchableOpacity>
       </View>
 
       <View style={[styles.hotelBar, { backgroundColor: '#0284c7' + '22' }]}>
         <Text style={[styles.hotelBarText, { color: '#0284c7' }]}>
-          👥 Grand Lumière — HR Management
+          {hotelInfo?.name || 'Hotel'} — HR
         </Text>
       </View>
 
@@ -124,7 +124,7 @@ export default function HRDashboard({ navigation }) {
       )}
 
       <View style={styles.footer}>
-        <Text style={styles.footerText}>Grand Lumière Hotel Management</Text>
+        <Text style={styles.footerText}>{hotelInfo?.name || 'Hotel'} Management</Text>
       </View>
     </ScrollView>
   );

@@ -1,4 +1,6 @@
 // src/screens/reception/RoomGridScreen.js
+// Author: Kiran Khadka, Contact: +977-9869756622, Mail: therealkiranda@gmail.com
+// © 2026 Kiran Khadka. All rights reserved.
 import React, { useState, useEffect, useContext } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, RefreshControl,
@@ -8,11 +10,11 @@ import { AuthContext } from '../../context/AuthContext';
 import { C, ScreenHeader, LoadingView } from '../../components/SharedComponents';
 
 const STATUS_CONFIG = {
-  available:   { color: C.success,   bg: '#d1fae5', label: 'Available',   short: 'AVL' },
-  occupied:    { color: C.blue,      bg: '#dbeafe', label: 'Occupied',    short: 'OCC' },
-  maintenance: { color: '#d97706',   bg: '#fef3c7', label: 'Maintenance', short: 'MNT' },
-  cleaning:    { color: C.purple,    bg: '#ede9fe', label: 'Cleaning',    short: 'CLN' },
-  reserved:    { color: C.primary,   bg: C.primary + '18', label: 'Reserved', short: 'RSV' },
+  available:    { color: C.success, bg: '#d1fae5', label: 'Available',    short: 'AVL' },
+  occupied:     { color: C.blue,    bg: '#dbeafe', label: 'Occupied',     short: 'OCC' },
+  maintenance:  { color: '#d97706', bg: '#fef3c7', label: 'Maintenance',  short: 'MNT' },
+  housekeeping: { color: C.purple,  bg: '#ede9fe', label: 'Housekeeping', short: 'HKP' },
+  reserved:     { color: C.primary, bg: C.primary + '18', label: 'Reserved', short: 'RSV' },
 };
 
 function RoomCell({ room, onPress }) {
@@ -25,39 +27,15 @@ function RoomCell({ room, onPress }) {
     >
       <Text style={[styles.cellNum, { color: sc.color }]}>{room.room_number}</Text>
       <Text style={[styles.cellStatus, { color: sc.color }]}>{sc.short}</Text>
-      {room.room_type && <Text style={styles.cellType} numberOfLines={1}>{room.room_type}</Text>}
+      {room.category_name && (
+        <Text style={styles.cellType} numberOfLines={1}>{room.category_name}</Text>
+      )}
     </TouchableOpacity>
   );
 }
 
-function RoomDetail({ room, onClose }) {
-  const sc = STATUS_CONFIG[room.status] || STATUS_CONFIG.available;
-  return (
-    <View style={styles.detailOverlay}>
-      <TouchableOpacity style={styles.detailBg} onPress={onClose} />
-      <View style={styles.detailCard}>
-        <View style={[styles.detailHeader, { backgroundColor: sc.color }]}>
-          <Text style={styles.detailRoom}>Room {room.room_number}</Text>
-          <Text style={styles.detailStatus}>{sc.label}</Text>
-        </View>
-        <View style={styles.detailBody}>
-          {room.room_type && <DetailRow label="Type" value={room.room_type} />}
-          {room.floor && <DetailRow label="Floor" value={room.floor} />}
-          {room.capacity && <DetailRow label="Capacity" value={`${room.capacity} guests`} />}
-          {room.price_per_night && <DetailRow label="Rate" value={`$${Number(room.price_per_night).toLocaleString()}/night`} />}
-          {room.guest_name && <DetailRow label="Guest" value={room.guest_name} />}
-          {room.check_out_date && <DetailRow label="Check-Out" value={room.check_out_date} />}
-          {room.amenities?.length > 0 && <DetailRow label="Amenities" value={room.amenities.join(', ')} />}
-        </View>
-        <TouchableOpacity style={styles.closeBtn} onPress={onClose}>
-          <Text style={styles.closeBtnText}>Close</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
-}
-
 function DetailRow({ label, value }) {
+  if (!value) return null;
   return (
     <View style={styles.detailRow}>
       <Text style={styles.detailLabel}>{label}</Text>
@@ -66,24 +44,73 @@ function DetailRow({ label, value }) {
   );
 }
 
+function RoomDetail({ room, onClose, currencySymbol }) {
+  const sc = STATUS_CONFIG[room.status] || STATUS_CONFIG.available;
+  const checkIn  = room.check_in_date  ? room.check_in_date.slice(0, 10)  : null;
+  const checkOut = room.check_out_date ? room.check_out_date.slice(0, 10) : null;
+  return (
+    <View style={styles.detailOverlay}>
+      <TouchableOpacity style={styles.detailBg} onPress={onClose} />
+      <View style={styles.detailCard}>
+        <View style={[styles.detailHeader, { backgroundColor: sc.color }]}>
+          <Text style={styles.detailRoom}>Room {room.room_number}</Text>
+          <Text style={styles.detailStatus}>{sc.label}</Text>
+        </View>
+        <ScrollView style={styles.detailBody}>
+          <DetailRow label="Category"     value={room.category_name} />
+          <DetailRow label="Floor"        value={room.floor ? `Floor ${room.floor}` : null} />
+          <DetailRow label="Wing"         value={room.wing} />
+          <DetailRow label="Bed Type"     value={room.bed_type} />
+          <DetailRow label="Max Guests"   value={room.max_adults ? `${room.max_adults} adults` : null} />
+          <DetailRow label="Rate"         value={room.base_price ? `${currencySymbol}${Number(room.base_price).toLocaleString()}/night` : null} />
+          <DetailRow label="Housekeeping" value={room.housekeeping_status} />
+          {room.booking_reference && (
+            <>
+              <View style={[styles.detailRow, { marginTop: 8, borderTopWidth: 2, borderTopColor: '#e5e7eb' }]}>
+                <Text style={[styles.detailLabel, { fontWeight: '700' }]}>Current Guest</Text>
+              </View>
+              <DetailRow label="Guest"      value={`${room.guest_first_name || ''} ${room.guest_last_name || ''}`.trim()} />
+              <DetailRow label="Phone"      value={room.guest_phone} />
+              <DetailRow label="Reference"  value={room.booking_reference} />
+              <DetailRow label="Check-In"   value={checkIn} />
+              <DetailRow label="Check-Out"  value={checkOut} />
+              <DetailRow label="Booking Status" value={room.booking_status?.replace(/_/g, ' ')} />
+              <DetailRow label="Payment"    value={room.payment_status} />
+              {room.total_amount && (
+                <DetailRow label="Total"    value={`${currencySymbol}${Number(room.total_amount).toLocaleString()}`} />
+              )}
+              {room.amount_paid && (
+                <DetailRow label="Paid"     value={`${currencySymbol}${Number(room.amount_paid).toLocaleString()}`} />
+              )}
+            </>
+          )}
+          {room.notes ? <DetailRow label="Notes" value={room.notes} /> : null}
+        </ScrollView>
+        <TouchableOpacity style={styles.closeBtn} onPress={onClose}>
+          <Text style={styles.closeBtnText}>Close</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+}
+
 export default function RoomGridScreen({ navigation }) {
-  const { api } = useContext(AuthContext);
-  const [rooms, setRooms] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { api, hotelInfo, theme } = useContext(AuthContext);
+  const [rooms, setRooms]         = useState([]);
+  const [loading, setLoading]     = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [filterStatus, setFilterStatus] = useState('all');
 
+  const primary        = theme?.primary_color || C.primary;
+  const currencySymbol = hotelInfo?.currency_symbol || '$';
+
   const fetchRooms = async () => {
     try {
-      const res = await api.get('/frontdesk/rooms');
-      setRooms(res.data?.rooms || res.data || []);
+      const res = await api.get('/frontdesk/room-grid');
+      setRooms(Array.isArray(res.data) ? res.data : []);
     } catch (e) {
-      // fallback to admin rooms
-      try {
-        const res = await api.get('/admin/rooms');
-        setRooms(res.data?.rooms || res.data || []);
-      } catch { }
+      console.error('Room grid error:', e.response?.data || e.message);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -92,57 +119,72 @@ export default function RoomGridScreen({ navigation }) {
 
   useEffect(() => { fetchRooms(); }, []);
 
-  const stats = Object.keys(STATUS_CONFIG).map(key => ({
-    key,
-    ...STATUS_CONFIG[key],
-    count: rooms.filter(r => r.status === key).length,
-  }));
+  const statusCounts = Object.keys(STATUS_CONFIG).reduce((acc, key) => {
+    acc[key] = rooms.filter(r => r.status === key).length;
+    return acc;
+  }, {});
+
+  const legend = [
+    { key: 'all',         label: `All (${rooms.length})`,                            color: C.gray },
+    { key: 'available',   label: `Available (${statusCounts.available || 0})`,        color: C.success },
+    { key: 'occupied',    label: `Occupied (${statusCounts.occupied || 0})`,          color: C.blue },
+    { key: 'maintenance', label: `Maintenance (${statusCounts.maintenance || 0})`,   color: '#d97706' },
+    { key: 'housekeeping',label: `Housekeeping (${statusCounts.housekeeping || 0})`, color: C.purple },
+  ];
 
   const filtered = filterStatus === 'all' ? rooms : rooms.filter(r => r.status === filterStatus);
 
+  const grouped = filtered.reduce((acc, r) => {
+    const key = `Floor ${r.floor || '—'}`;
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(r);
+    return acc;
+  }, {});
+
   return (
     <View style={styles.container}>
-      <ScreenHeader title="Room Grid" subtitle={`${rooms.length} rooms`} onBack={() => navigation.goBack()} />
+      <ScreenHeader
+        title="Room Grid"
+        subtitle={`${rooms.length} rooms`}
+        onBack={() => navigation.goBack()}
+        color={primary}
+      />
 
-      {/* Legend / filter */}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.legendRow} contentContainerStyle={styles.legendContent}>
-        <TouchableOpacity
-          style={[styles.legendItem, filterStatus === 'all' && styles.legendActive]}
-          onPress={() => setFilterStatus('all')}
-        >
-          <Text style={[styles.legendLabel, filterStatus === 'all' && { color: C.primary, fontWeight: '700' }]}>
-            All ({rooms.length})
-          </Text>
-        </TouchableOpacity>
-        {stats.filter(s => s.count > 0).map(s => (
+        {legend.map(s => (
           <TouchableOpacity
             key={s.key}
-            style={[styles.legendItem, { borderBottomColor: s.color }, filterStatus === s.key && styles.legendActive]}
+            style={[styles.legendItem, filterStatus === s.key && { borderBottomColor: s.color, borderBottomWidth: 2 }]}
             onPress={() => setFilterStatus(s.key)}
           >
             <View style={[styles.legendDot, { backgroundColor: s.color }]} />
-            <Text style={[styles.legendLabel, { color: s.color }]}>{s.label} ({s.count})</Text>
+            <Text style={[styles.legendLabel, { color: s.color }]}>{s.label}</Text>
           </TouchableOpacity>
         ))}
       </ScrollView>
 
       {loading ? <LoadingView /> : (
         <ScrollView
-          contentContainerStyle={styles.grid}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchRooms(); }} tintColor={C.gold} />}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchRooms(); }} tintColor={primary} />}
         >
-          {filtered.length === 0 ? (
+          {Object.keys(grouped).sort().map(floorKey => (
+            <View key={floorKey} style={styles.floorSection}>
+              <Text style={[styles.floorLabel, { color: primary }]}>{floorKey}</Text>
+              <View style={styles.grid}>
+                {grouped[floorKey].map((room, i) => (
+                  <RoomCell key={i} room={room} onPress={setSelectedRoom} />
+                ))}
+              </View>
+            </View>
+          ))}
+          {filtered.length === 0 && (
             <Text style={styles.empty}>No rooms found</Text>
-          ) : (
-            filtered.map((room, i) => (
-              <RoomCell key={i} room={room} onPress={setSelectedRoom} />
-            ))
           )}
         </ScrollView>
       )}
 
       {selectedRoom && (
-        <RoomDetail room={selectedRoom} onClose={() => setSelectedRoom(null)} />
+        <RoomDetail room={selectedRoom} onClose={() => setSelectedRoom(null)} currencySymbol={currencySymbol} />
       )}
     </View>
   );
@@ -154,16 +196,14 @@ const styles = StyleSheet.create({
   legendContent: { paddingHorizontal: 12, alignItems: 'center', gap: 4 },
   legendItem: {
     flexDirection: 'row', alignItems: 'center',
-    paddingHorizontal: 10, paddingVertical: 8,
+    paddingHorizontal: 10, paddingVertical: 12,
     borderBottomWidth: 2, borderBottomColor: 'transparent',
   },
-  legendActive: { borderBottomColor: C.primary },
   legendDot: { width: 8, height: 8, borderRadius: 4, marginRight: 5 },
-  legendLabel: { fontSize: 11, fontWeight: '600', color: C.gray },
-  grid: {
-    flexDirection: 'row', flexWrap: 'wrap',
-    padding: 12, gap: 8,
-  },
+  legendLabel: { fontSize: 11, fontWeight: '600' },
+  floorSection: { paddingHorizontal: 12, paddingTop: 12 },
+  floorLabel: { fontSize: 11, fontWeight: '700', letterSpacing: 1, marginBottom: 8 },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   cell: {
     width: '22%', aspectRatio: 0.9,
     borderRadius: 10, borderWidth: 1,
@@ -173,13 +213,11 @@ const styles = StyleSheet.create({
   cellStatus: { fontSize: 8, fontWeight: '700', marginTop: 2 },
   cellType: { fontSize: 7, color: C.gray, marginTop: 1, textAlign: 'center' },
   empty: { color: C.gray, textAlign: 'center', marginTop: 40, fontSize: 14 },
-
-  // Detail modal
   detailOverlay: { ...StyleSheet.absoluteFillObject, justifyContent: 'flex-end', zIndex: 100 },
   detailBg: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.4)' },
   detailCard: {
     backgroundColor: C.white, borderTopLeftRadius: 24, borderTopRightRadius: 24,
-    overflow: 'hidden',
+    overflow: 'hidden', maxHeight: '75%',
   },
   detailHeader: { padding: 20, alignItems: 'center' },
   detailRoom: { fontSize: 22, fontWeight: '800', color: '#fff' },

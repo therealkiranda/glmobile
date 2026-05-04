@@ -1,5 +1,6 @@
 // src/screens/AdminDashboard.js
-// Fixed: correct API endpoint /api/admin/dashboard, uses api from AuthContext
+// Author: Kiran Khadka, Contact: +977-9869756622, Mail: therealkiranda@gmail.com
+// © 2026 Kiran Khadka. All rights reserved.
 import React, { useState, useEffect, useContext } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
@@ -7,13 +8,7 @@ import {
 } from 'react-native';
 import { AuthContext } from '../context/AuthContext';
 
-const C = {
-  primary: '#1a3c2e', gold: '#c9a96e', bg: '#f4f1eb',
-  white: '#ffffff', gray: '#6b7280', lightBg: '#fffef9',
-  border: '#e5e0d5',
-};
-
-function StatCard({ icon, value, label, color }) {
+function StatCard({ icon, value, label, color, primary }) {
   return (
     <View style={[styles.statCard, { borderTopColor: color, borderTopWidth: 3 }]}>
       <Text style={styles.statIcon}>{icon}</Text>
@@ -23,7 +18,7 @@ function StatCard({ icon, value, label, color }) {
   );
 }
 
-function MenuButton({ icon, label, onPress, color = C.primary }) {
+function MenuButton({ icon, label, onPress, color }) {
   return (
     <TouchableOpacity style={styles.menuItem} onPress={onPress} activeOpacity={0.8}>
       <View style={[styles.menuIcon, { backgroundColor: color + '15' }]}>
@@ -36,21 +31,25 @@ function MenuButton({ icon, label, onPress, color = C.primary }) {
 }
 
 export default function AdminDashboard({ navigation }) {
-  const [stats, setStats]       = useState(null);
+  const [stats, setStats]           = useState(null);
   const [refreshing, setRefreshing] = useState(false);
-  const [loading, setLoading]   = useState(true);
-  const { user, logout, api }   = useContext(AuthContext);
+  const [loading, setLoading]       = useState(true);
+  const { user, logout, api, hotelInfo, theme } = useContext(AuthContext);
+
+  const primary = theme?.primary_color || '#1a3c2e';
+  const gold    = theme?.secondary_color || '#c9a96e';
+  const bg      = theme?.background_color || '#f4f1eb';
 
   const displayName = user
-    ? `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Admin'
+    ? `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.name || 'Admin'
     : 'Admin';
 
   const fetchDashboard = async () => {
     try {
       const response = await api.get('/admin/dashboard');
-      setStats(response.data.stats);
+      setStats(response.data?.stats || response.data);
     } catch (error) {
-      console.error('Dashboard fetch error:', error.response?.data || error.message);
+      console.error('Dashboard error:', error.response?.data || error.message);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -58,64 +57,64 @@ export default function AdminDashboard({ navigation }) {
   };
 
   useEffect(() => { fetchDashboard(); }, []);
-  const onRefresh = () => { setRefreshing(true); fetchDashboard(); };
+
+  const handleLogout = async () => {
+    await logout();
+    navigation.replace('Login');
+  };
 
   return (
     <ScrollView
-      style={styles.container}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={C.gold} />}
+      style={[styles.container, { backgroundColor: bg }]}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchDashboard(); }} tintColor={gold} />}
     >
-      <StatusBar barStyle="light-content" backgroundColor={C.primary} />
+      <StatusBar barStyle="light-content" backgroundColor={primary} />
 
-      {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: primary }]}>
         <View>
           <Text style={styles.headerGreeting}>Good {getTimeOfDay()},</Text>
           <Text style={styles.headerName}>{displayName}</Text>
         </View>
-        <TouchableOpacity style={styles.logoutBtn} onPress={logout}>
+        <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
           <Text style={styles.logoutText}>Sign Out</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Hotel name bar */}
-      <View style={styles.hotelBar}>
-        <Text style={styles.hotelBarText}>🏨 Grand Lumière Hotel — Admin</Text>
+      <View style={[styles.hotelBar, { backgroundColor: gold }]}>
+        <Text style={[styles.hotelBarText, { color: primary }]}>🏨 {hotelInfo?.name || 'Hotel'} — Admin</Text>
       </View>
 
       {loading ? (
         <View style={styles.loadingBox}>
-          <ActivityIndicator size="large" color={C.gold} />
-          <Text style={styles.loadingText}>Loading dashboard...</Text>
+          <ActivityIndicator size="large" color={gold} />
+          <Text style={styles.loadingText}>Loading dashboard…</Text>
         </View>
       ) : (
         <>
-          {/* Stats grid */}
           <View style={styles.statsGrid}>
-            <StatCard icon="📋" value={stats?.total_bookings || 0}     label="Total Bookings"   color={C.primary} />
-            <StatCard icon="⏳" value={stats?.pending_bookings || 0}   label="Pending"          color="#d97706" />
-            <StatCard icon="🛏" value={stats?.active_guests || 0}      label="Active Guests"    color="#0284c7" />
-            <StatCard icon="📅" value={stats?.arrivals_today || 0}     label="Arrivals Today"   color="#7c3aed" />
-            <StatCard icon="🚪" value={stats?.departures_today || 0}   label="Departures Today" color="#dc2626" />
-            <StatCard icon="💰" value={`$${Number(stats?.revenue_this_month || 0).toLocaleString()}`} label="Revenue (Month)" color={C.gold} />
+            <StatCard icon="📋" value={stats?.total_bookings || 0}    label="Total Bookings"    color="#1a3c2e" />
+            <StatCard icon="⏳" value={stats?.pending_bookings || 0}  label="Pending"           color="#d97706" />
+            <StatCard icon="🛏" value={stats?.active_guests || 0}     label="Active Guests"     color="#0284c7" />
+            <StatCard icon="📅" value={stats?.arrivals_today || 0}    label="Arrivals Today"    color="#7c3aed" />
+            <StatCard icon="🚪" value={stats?.departures_today || 0}  label="Departures Today"  color="#dc2626" />
+            <StatCard icon="💰" value={`${hotelInfo?.currency_symbol || '$'}${Number(stats?.revenue_this_month || 0).toLocaleString()}`} label="Revenue (Month)" color={gold} />
           </View>
 
-          {/* Quick Actions */}
           <Text style={styles.sectionTitle}>QUICK ACTIONS</Text>
           <View style={styles.menuList}>
-            <MenuButton icon="📋" label="Bookings"   color="#1a3c2e" onPress={() => navigation.navigate('AdminBookings')} />
-            <MenuButton icon="🛏" label="Rooms"      color="#0284c7" onPress={() => navigation.navigate('AdminRooms')} />
-            <MenuButton icon="👤" label="Customers"  color="#7c3aed" onPress={() => navigation.navigate('AdminCustomers')} />
-            <MenuButton icon="👥" label="Staff"      color="#d97706" onPress={() => navigation.navigate('AdminStaff')} />
-            <MenuButton icon="💳" label="Payments"   color="#059669" onPress={() => navigation.navigate('AdminPayments')} />
-            <MenuButton icon="📊" label="Reports"    color="#dc2626" onPress={() => navigation.navigate('AdminReports')} />
-            <MenuButton icon="⚙️" label="Settings"   color="#6b7280" onPress={() => navigation.navigate('AdminSettings')} />
+            <MenuButton icon="📋" label="Bookings"  color={primary}   onPress={() => navigation.navigate('AdminBookings')} />
+            <MenuButton icon="🛏" label="Rooms"     color="#0284c7"   onPress={() => navigation.navigate('AdminRooms')} />
+            <MenuButton icon="👤" label="Customers" color="#7c3aed"   onPress={() => navigation.navigate('AdminCustomers')} />
+            <MenuButton icon="👥" label="Staff"     color="#d97706"   onPress={() => navigation.navigate('AdminStaff')} />
+            <MenuButton icon="💳" label="Payments"  color="#059669"   onPress={() => navigation.navigate('AdminPayments')} />
+            <MenuButton icon="📊" label="Reports"   color="#dc2626"   onPress={() => navigation.navigate('AdminReports')} />
+            <MenuButton icon="⚙️" label="Settings"  color="#6b7280"   onPress={() => navigation.navigate('AdminSettings')} />
           </View>
         </>
       )}
 
       <View style={styles.footer}>
-        <Text style={styles.footerText}>Grand Lumière Hotel Management System</Text>
+        <Text style={styles.footerText}>{hotelInfo?.name || 'Hotel'} Management System</Text>
       </View>
     </ScrollView>
   );
@@ -129,37 +128,26 @@ function getTimeOfDay() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg },
-
+  container: { flex: 1 },
   header: {
-    backgroundColor: C.primary,
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
     paddingHorizontal: 20, paddingTop: 60, paddingBottom: 20,
   },
   headerGreeting: { fontSize: 13, color: 'rgba(255,255,255,0.7)' },
-  headerName: { fontSize: 20, fontWeight: '700', color: C.white },
+  headerName: { fontSize: 20, fontWeight: '700', color: '#fff' },
   logoutBtn: {
     backgroundColor: 'rgba(255,255,255,0.12)',
     paddingHorizontal: 14, paddingVertical: 7,
     borderRadius: 20, borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)',
   },
-  logoutText: { color: C.white, fontSize: 12, fontWeight: '600' },
-
-  hotelBar: {
-    backgroundColor: C.gold,
-    paddingVertical: 8, paddingHorizontal: 20, alignItems: 'center',
-  },
-  hotelBarText: { color: C.primary, fontSize: 12, fontWeight: '700', letterSpacing: 0.5 },
-
+  logoutText: { color: '#fff', fontSize: 12, fontWeight: '600' },
+  hotelBar: { paddingVertical: 8, paddingHorizontal: 20, alignItems: 'center' },
+  hotelBarText: { fontSize: 12, fontWeight: '700', letterSpacing: 0.5 },
   loadingBox: { alignItems: 'center', paddingTop: 80, gap: 16 },
-  loadingText: { color: C.gray, fontSize: 14 },
-
-  statsGrid: {
-    flexDirection: 'row', flexWrap: 'wrap',
-    padding: 12,
-  },
+  loadingText: { color: '#6b7280', fontSize: 14 },
+  statsGrid: { flexDirection: 'row', flexWrap: 'wrap', padding: 12 },
   statCard: {
-    backgroundColor: C.white,
+    backgroundColor: '#fff',
     width: '47%', margin: '1.5%',
     borderRadius: 14, padding: 16, alignItems: 'center',
     shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
@@ -167,15 +155,14 @@ const styles = StyleSheet.create({
   },
   statIcon: { fontSize: 22, marginBottom: 8 },
   statNumber: { fontSize: 24, fontWeight: '800', marginBottom: 4 },
-  statLabel: { fontSize: 11, color: C.gray, textAlign: 'center' },
-
+  statLabel: { fontSize: 11, color: '#6b7280', textAlign: 'center' },
   sectionTitle: {
-    fontSize: 10, fontWeight: '700', color: C.gray,
+    fontSize: 10, fontWeight: '700', color: '#6b7280',
     letterSpacing: 2, paddingHorizontal: 20, marginTop: 8, marginBottom: 12,
   },
   menuList: { paddingHorizontal: 16, paddingBottom: 8 },
   menuItem: {
-    backgroundColor: C.white,
+    backgroundColor: '#fff',
     borderRadius: 14, padding: 16,
     flexDirection: 'row', alignItems: 'center',
     marginBottom: 10,
@@ -187,9 +174,8 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center', marginRight: 14,
   },
   menuEmoji: { fontSize: 20 },
-  menuText: { flex: 1, fontSize: 15, fontWeight: '600', color: C.primary },
-  menuArrow: { fontSize: 24, color: C.gray, fontWeight: '300' },
-
+  menuText: { flex: 1, fontSize: 15, fontWeight: '600', color: '#1a3c2e' },
+  menuArrow: { fontSize: 24, color: '#6b7280', fontWeight: '300' },
   footer: { alignItems: 'center', padding: 24 },
-  footerText: { fontSize: 11, color: C.gray },
+  footerText: { fontSize: 11, color: '#6b7280' },
 });

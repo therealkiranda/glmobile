@@ -1,5 +1,6 @@
 // src/context/AuthContext.js
-// Fixed: correct API URL /api/auth/admin/login, correct response fields (admin not user)
+// Author: Kiran Khadka, Contact: +977-9869756622, Mail: therealkiranda@gmail.com
+// © 2026 Kiran Khadka. All rights reserved.
 import React, { createContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
@@ -9,16 +10,34 @@ const API_BASE = 'https://hotel.primelogic.com.np/api';
 export const api = axios.create({
   baseURL: API_BASE,
   headers: { 'Content-Type': 'application/json' },
-  timeout: 10000,
+  timeout: 15000,
 });
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser]       = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser]           = useState(null);
+  const [loading, setLoading]     = useState(true);
+  const [hotelInfo, setHotelInfo] = useState({ name: 'Hotel', tagline: '' });
+  const [theme, setTheme]         = useState({
+    primary_color: '#1a3c2e',
+    secondary_color: '#c9a96e',
+    background_color: '#f4f1eb',
+    accent_color: '#065f46',
+  });
 
   useEffect(() => { checkAuth(); }, []);
+
+  const fetchHotelMeta = async () => {
+    try {
+      const [infoRes, themeRes] = await Promise.all([
+        api.get('/admin/hotel-info'),
+        api.get('/admin/theme'),
+      ]);
+      if (infoRes.data?.name) setHotelInfo(infoRes.data);
+      if (themeRes.data?.primary_color) setTheme(themeRes.data);
+    } catch {}
+  };
 
   const checkAuth = async () => {
     try {
@@ -27,6 +46,7 @@ export const AuthProvider = ({ children }) => {
       if (storedToken && storedUser) {
         api.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
         setUser(JSON.parse(storedUser));
+        fetchHotelMeta();
       }
     } catch (e) {
       console.error('checkAuth:', e);
@@ -43,6 +63,7 @@ export const AuthProvider = ({ children }) => {
       await AsyncStorage.setItem('gl_user', JSON.stringify(admin));
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       setUser(admin);
+      fetchHotelMeta();
       return { success: true };
     } catch (error) {
       const msg = error.response?.data?.error
@@ -61,7 +82,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, api }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, api, hotelInfo, theme }}>
       {children}
     </AuthContext.Provider>
   );
