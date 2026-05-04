@@ -50,7 +50,8 @@ export default function CustomersScreen({ navigation }) {
   const fetchCustomers = async () => {
     try {
       const res = await api.get('/admin/customers');
-      setCustomers(res.data?.customers || res.data?.guests || res.data || []);
+      const d = res.data;
+      setCustomers(Array.isArray(d) ? d : (d?.data || []));
     } catch (e) {
       console.error('Customers error:', e.response?.data || e.message);
     } finally {

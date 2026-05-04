@@ -49,8 +49,9 @@ export default function PaymentsScreen({ navigation }) {
 
   const fetchPayments = async () => {
     try {
-      const res = await api.get('/admin/payments');
-      setPayments(res.data?.payments || res.data || []);
+      const res = await api.get('/payments');
+      const d = res.data;
+      setPayments(Array.isArray(d) ? d : (d?.data || []));
     } catch (e) {
       console.error('Payments error:', e.response?.data || e.message);
     } finally {

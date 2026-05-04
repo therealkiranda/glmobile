@@ -49,7 +49,8 @@ export default function EmployeesScreen({ navigation }) {
   const fetchEmployees = async () => {
     try {
       const res = await api.get('/hr/employees');
-      setEmployees(res.data?.employees || res.data?.staff || res.data || []);
+      const d = res.data;
+      setEmployees(Array.isArray(d) ? d : (d?.data || []));
     } catch (e) {
       console.error('Employees error:', e.response?.data || e.message);
     } finally {
