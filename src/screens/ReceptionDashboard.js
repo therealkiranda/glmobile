@@ -179,7 +179,7 @@ const styles = StyleSheet.create({
     fontSize: 10, fontWeight: '700', color: C.gray,
     letterSpacing: 2, paddingHorizontal: 16, marginBottom: 10, marginTop: 4,
   },
-  actionsRow: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 12, gap: 0 },
+  actionsRow: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 12 },
   actionBtn: {
     backgroundColor: C.white, width: '46%', margin: '2%',
     borderRadius: 14, padding: 16, alignItems: 'center',

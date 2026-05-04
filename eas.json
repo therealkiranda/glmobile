@@ -1,20 +1,20 @@
 {
   "cli": {
-    "version": ">= 18.9.1",
-    "appVersionSource": "remote"
+    "version": ">= 18.9.1"
   },
   "build": {
     "preview": {
+      "distribution": "internal",
       "android": {
-        "buildType": "apk"
-      },
-      "distribution": "internal"
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleRelease"
+      }
     },
     "production": {
+      "distribution": "store",
       "android": {
-        "buildType": "apk"
-      },
-      "autoIncrement": true
+        "buildType": "app-bundle"
+      }
     }
   },
   "submit": {
