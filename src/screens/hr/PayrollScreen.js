@@ -52,7 +52,8 @@ export default function PayrollScreen({ navigation }) {
   const fetchPayroll = async () => {
     try {
       const res = await api.get('/hr/payroll');
-      setPayroll(res.data?.payroll || res.data?.records || res.data || []);
+      const d = res.data;
+      setPayroll(Array.isArray(d) ? d : (d?.data || []));
     } catch (e) {
       console.error('Payroll error:', e.response?.data || e.message);
     } finally {

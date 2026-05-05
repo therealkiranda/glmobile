@@ -59,8 +59,9 @@ export default function LeaveScreen({ navigation }) {
 
   const fetchLeaves = async () => {
     try {
-      const res = await api.get('/hr/leaves');
-      setLeaves(res.data?.leaves || res.data?.leave_requests || res.data || []);
+      const res = await api.get('/hr/leave-requests');
+      const d = res.data;
+      setLeaves(Array.isArray(d) ? d : (d?.data || []));
     } catch (e) {
       console.error('Leave error:', e.response?.data || e.message);
     } finally {

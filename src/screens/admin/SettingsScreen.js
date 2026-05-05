@@ -17,16 +17,26 @@ function SettingRow({ icon, label, value, onPress, danger }) {
 }
 
 export default function SettingsScreen({ navigation }) {
-  const { user, logout } = useContext(AuthContext);
+  const { user, logout, hotelInfo, theme } = useContext(AuthContext);
+
+  const primary = theme?.primary_color || C.primary;
+  const gold    = theme?.secondary_color || '#c9a96e';
 
   const displayName = user
     ? `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email
     : 'Admin';
 
+  const apiHost = hotelInfo?.api_url
+    || hotelInfo?.website
+    || 'hotel.primelogic.com.np';
+
   const handleLogout = () => {
     Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
       { text: 'Cancel', style: 'cancel' },
-      { text: 'Sign Out', style: 'destructive', onPress: logout },
+      { text: 'Sign Out', style: 'destructive', onPress: async () => {
+        await logout();
+        navigation.replace('Login');
+      }},
     ]);
   };
 
@@ -58,8 +68,8 @@ export default function SettingsScreen({ navigation }) {
 
         <Card>
           <Text style={styles.sectionTitle}>Hotel</Text>
-          <SettingRow icon="🏨" label="Property" value="Grand Lumière" />
-          <SettingRow icon="🌐" label="API" value="hotel.primelogic.com.np" />
+          <SettingRow icon="🏨" label="Property" value={hotelInfo?.name || '—'} />
+          <SettingRow icon="🌐" label="API" value={apiHost} />
         </Card>
 
         <Card>
