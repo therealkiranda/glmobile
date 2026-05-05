@@ -1,7 +1,7 @@
 // src/screens/RoleSelectionScreen.js
 // Author: Kiran Khadka, Contact: +977-9869756622, Mail: therealkiranda@gmail.com
 // © 2026 Kiran Khadka. All rights reserved.
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, StatusBar, ScrollView } from 'react-native';
 import { AuthContext } from '../context/AuthContext';
 
@@ -52,13 +52,14 @@ export default function RoleSelectionScreen({ navigation }) {
 
   const availableRoles = getAvailableRoles();
 
-  if (availableRoles.length === 1) {
-    const cfg = ROLE_CONFIG[availableRoles[0]];
-    if (cfg) {
-      navigation.replace(cfg.screen);
-      return null;
+  useEffect(() => {
+    if (availableRoles.length === 1) {
+      const cfg = ROLE_CONFIG[availableRoles[0]];
+      if (cfg) navigation.replace(cfg.screen);
     }
-  }
+  }, []);
+
+  if (availableRoles.length === 1) return null;
 
   return (
     <ScrollView style={[styles.container, { backgroundColor: bg }]} contentContainerStyle={styles.content}>
