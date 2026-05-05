@@ -1,6 +1,3 @@
-// src/context/AuthContext.js
-// Author: Kiran Khadka, Contact: +977-9869756622, Mail: therealkiranda@gmail.com
-// © 2026 Kiran Khadka. All rights reserved.
 import React, { createContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
@@ -26,7 +23,13 @@ export const AuthProvider = ({ children }) => {
     accent_color: '#065f46',
   });
 
-  useEffect(() => { checkAuth(); }, []);
+  useEffect(() => {
+    const timeout = setTimeout(() => setLoading(false), 3000);
+    checkAuth().finally(() => {
+      clearTimeout(timeout);
+      setLoading(false);
+    });
+  }, []);
 
   const fetchHotelMeta = async () => {
     try {
@@ -50,8 +53,6 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (e) {
       console.error('checkAuth:', e);
-    } finally {
-      setLoading(false);
     }
   };
 

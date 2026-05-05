@@ -6,7 +6,7 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": false,
+    "newArchEnabled": true,
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -33,6 +33,9 @@
         "projectId": "4c996d97-2e47-44be-b8f4-cae507ca0660"
       }
     },
-    "owner": "kiranda"
+    "owner": "kiranda",
+    "plugins": [
+      "expo-asset"
+    ]
   }
 }
