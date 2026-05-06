@@ -1,6 +1,10 @@
+// src/context/AuthContext.js
+// Author: Kiran Khadka, Contact: +977-9869756622, Mail: therealkiranda@gmail.com
+// © 2026 Kiran Khadka. All rights reserved.
 import React, { createContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import { registerPushToken } from '../services/NotificationService';
 
 const API_BASE = 'https://hotel.primelogic.com.np/api';
 
@@ -50,6 +54,7 @@ export const AuthProvider = ({ children }) => {
         api.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
         setUser(JSON.parse(storedUser));
         fetchHotelMeta();
+        registerPushToken(api).catch(() => {});
       }
     } catch (e) {
       console.error('checkAuth:', e);
@@ -65,6 +70,7 @@ export const AuthProvider = ({ children }) => {
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       setUser(admin);
       fetchHotelMeta();
+      registerPushToken(api).catch(() => {});
       return { success: true };
     } catch (error) {
       const msg = error.response?.data?.error
