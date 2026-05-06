@@ -25,12 +25,12 @@ export async function registerPushToken(api) {
     const tokenData = await Notifications.getExpoPushTokenAsync({
       projectId: '4c996d97-2e47-44be-b8f4-cae507ca0660',
     });
-    const token = tokenData.data;
+    const token = tokenData?.data;
+    if (!token) return null;
 
     await api.post('/admin/push-token', { token, platform: Platform.OS });
     return token;
-  } catch (e) {
-    console.error('Push token error:', e.message);
+  } catch {
     return null;
   }
 }

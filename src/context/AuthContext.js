@@ -4,7 +4,6 @@
 import React, { createContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
-import { registerPushToken } from '../services/NotificationService';
 
 const API_BASE = 'https://hotel.primelogic.com.np/api';
 
@@ -46,6 +45,13 @@ export const AuthProvider = ({ children }) => {
     } catch {}
   };
 
+  const registerPush = async () => {
+    try {
+      const { registerPushToken } = require('../services/NotificationService');
+      await registerPushToken(api);
+    } catch {}
+  };
+
   const checkAuth = async () => {
     try {
       const storedToken = await AsyncStorage.getItem('gl_token');
@@ -54,7 +60,7 @@ export const AuthProvider = ({ children }) => {
         api.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
         setUser(JSON.parse(storedUser));
         fetchHotelMeta();
-        registerPushToken(api).catch(() => {});
+        setTimeout(() => registerPush(), 2000);
       }
     } catch (e) {
       console.error('checkAuth:', e);
@@ -70,7 +76,7 @@ export const AuthProvider = ({ children }) => {
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       setUser(admin);
       fetchHotelMeta();
-      registerPushToken(api).catch(() => {});
+      setTimeout(() => registerPush(), 2000);
       return { success: true };
     } catch (error) {
       const msg = error.response?.data?.error
